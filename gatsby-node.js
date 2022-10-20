@@ -1,6 +1,6 @@
-require('dotenv').config({ path: './.env.development' });
-const path = require('path');
-const { createFilePath } = require('gatsby-source-filesystem');
+require("dotenv").config({ path: "./.env.development" });
+const path = require("path");
+const { createFilePath } = require("gatsby-source-filesystem");
 
 // This surfaces backend env variables to the front end by prefixing them with GATSBY_
 process.env.GATSBY_DEPLOY_PRIME_URL = process.env.DEPLOY_PRIME_URL;
@@ -15,36 +15,36 @@ function getOnlyTheDataWeNeed(node) {
   return node;
   // TODO fix this
   // possible there is no next/prev
-  if(!node) {
+  if (!node) {
     return;
   }
   // possible we have the title we need
-  if(node.frontmatter) {
+  if (node.frontmatter) {
     return {
       node: {
         fields: {
-          slug: node.fields.slug
+          slug: node.fields.slug,
         },
         frontmatter: {
-          title: node.frontmatter.title
-        }
-      }
-    }
+          title: node.frontmatter.title,
+        },
+      },
+    };
   }
   // otherwise we need the body (usually a tip)
   return {
-    body: node.body
-  }
+    body: node.body,
+  };
 }
 
 async function makePostsFromMdx({ graphql, actions }) {
-  const blogPost = path.resolve('./src/templates/post.js');
+  const blogPost = path.resolve("./src/templates/post.js");
   const { errors, data } = await graphql(
     `
       {
         allMdx(
           filter: { fields: { collection: { eq: "post" } } }
-          sort: { fields: [frontmatter___date], order: DESC }
+          sort: { frontmatter: { date: DESC } }
         ) {
           edges {
             node {
@@ -55,48 +55,10 @@ async function makePostsFromMdx({ graphql, actions }) {
               frontmatter {
                 title
               }
-            }
-          }
-        }
-      }
-    `
-  );
-  if (errors) {
-    console.log(errors);
-    throw new Error('There was an error');
-  }
-  const posts = data.allMdx.edges;
-  posts.forEach((post, i) => {
-    const prev = posts[i - 1];
-    const next = posts[i + 1];
-    actions.createPage({
-      path: post.node.fields.slug,
-      component: blogPost,
-      context: {
-        slug: post.node.fields.slug,
-        collection: 'post',
-        prev: getOnlyTheDataWeNeed(prev),
-        next: getOnlyTheDataWeNeed(next),
-        pathPrefix: '',
-      },
-    });
-  });
-}
-
-async function makeTipsFromMdx({ graphql, actions }) {
-  const tipTemplate = path.resolve('./src/templates/tip.js');
-  const { errors, data } = await graphql(
-    `
-      {
-        allMdx(
-          filter: { fields: { collection: { eq: "tip" } } }
-          sort: { fields: [frontmatter___date], order: DESC }
-        ) {
-          edges {
-            node {
-              body
-              fields {
-                slug
+              parent {
+                ... on File {
+                  absolutePath
+                }
               }
             }
           }
@@ -106,7 +68,55 @@ async function makeTipsFromMdx({ graphql, actions }) {
   );
   if (errors) {
     console.log(errors);
-    throw new Error('There was an error');
+    throw new Error("There was an error");
+  }
+  const posts = data.allMdx.edges;
+  posts.forEach((post, i) => {
+    const prev = posts[i - 1];
+    const next = posts[i + 1];
+    actions.createPage({
+      path: post.node.fields.slug,
+      component: `${blogPost}?__contentFilePath=${post.node.parent.absolutePath}`,
+      context: {
+        slug: post.node.fields.slug,
+        collection: "post",
+        prev: getOnlyTheDataWeNeed(prev),
+        next: getOnlyTheDataWeNeed(next),
+        pathPrefix: "",
+      },
+    });
+  });
+}
+
+async function makeTipsFromMdx({ graphql, actions }) {
+  const tipTemplate = path.resolve("./src/templates/tip.js");
+  const { errors, data } = await graphql(
+    `
+      {
+        allMdx(
+          filter: { fields: { collection: { eq: "tip" } } }
+          sort: { frontmatter: { date: DESC } }
+        ) {
+          edges {
+            node {
+              body
+              fields {
+                slug
+              }
+              parent {
+                ... on File {
+                  absolutePath
+                }
+              }
+            }
+          }
+        }
+      }
+    `
+  );
+  if (errors) {
+    console.log(errors);
+    throw new Error("There was an error");
   }
   const tips = data.allMdx.edges;
   tips.forEach((tip, i) => {
@@ -115,26 +125,26 @@ async function makeTipsFromMdx({ graphql, actions }) {
     const next = tips[i + 1];
     actions.createPage({
       path: `/tip${tip.node.fields.slug}`,
-      component: tipTemplate,
+      component: `${tipTemplate}?__contentFilePath=${tip.node.parent.absolutePath}`,
       context: {
         slug: tip.node.fields.slug,
         prev: getOnlyTheDataWeNeed(prev),
-        collection: 'tip',
+        collection: "tip",
         next: getOnlyTheDataWeNeed(next),
-        pathPrefix: '/tip',
+        pathPrefix: "/tip",
       },
     });
   });
 }
 
 async function makeJavaScriptFromMdx({ graphql, actions }) {
-  const javascriptPage = path.resolve('./src/templates/javascript.js');
+  const javascriptPage = path.resolve("./src/templates/javascript.js");
   const { errors, data } = await graphql(
     `
       {
         allMdx(
           filter: { fields: { collection: { eq: "javascript" } } }
-          sort: { fields: frontmatter___tocTitle }
+          sort: { frontmatter: { tocTitle: ASC } }
         ) {
           edges {
             node {
@@ -145,6 +155,11 @@ async function makeJavaScriptFromMdx({ graphql, actions }) {
               frontmatter {
                 title
               }
+              parent {
+                ... on File {
+                  absolutePath
+                }
+              }
             }
           }
         }
@@ -153,7 +168,7 @@ async function makeJavaScriptFromMdx({ graphql, actions }) {
   );
   if (errors) {
     console.log(errors);
-    throw new Error('There was an error');
+    throw new Error("There was an error");
   }
   const javascriptPosts = data.allMdx.edges;
 
@@ -163,13 +178,13 @@ async function makeJavaScriptFromMdx({ graphql, actions }) {
 
     actions.createPage({
       path: `/javascript${post.node.fields.slug}`,
-      component: javascriptPage,
+      component: `${javascriptPage}?__contentFilePath=${post.node.parent.absolutePath}`,
       context: {
         slug: post.node.fields.slug,
-        collection: 'javascript',
+        collection: "javascript",
         prev: getOnlyTheDataWeNeed(prev),
         next: getOnlyTheDataWeNeed(next),
-        pathPrefix: '/javascript',
+        pathPrefix: "/javascript",
       },
     });
   });
@@ -193,7 +208,7 @@ async function paginate({
   );
   if (errors) {
     console.log(errors);
-    throw new Error('There was an error');
+    throw new Error("There was an error");
   }
   const { totalCount } = data.allMdx;
   const pages = Math.ceil(totalCount / 10);
@@ -212,7 +227,19 @@ async function paginate({
 }
 
 exports.createPages = async ({ graphql, actions }) => {
-  const { createPage } = actions;
+  //Using slices
+  actions.createSlice({
+    id: `content-nav`,
+    component: require.resolve(`./src/slices/ContentNavSlice.js`),
+  });
+  actions.createSlice({
+    id: `footer`,
+    component: require.resolve(`./src/slices/FooterSlice.js`),
+  });
+  actions.createSlice({
+    id: `nav`,
+    component: require.resolve(`./src/slices/NavSlice.js`),
+  });
   await Promise.all([
     makePostsFromMdx({ graphql, actions }),
     makeTipsFromMdx({ graphql, actions }),
@@ -220,23 +247,23 @@ exports.createPages = async ({ graphql, actions }) => {
     paginate({
       graphql,
       actions,
-      collection: 'javascript',
-      pathPrefix: '/javascript/',
-      component: path.resolve('./src/pages/javascript.js'),
+      collection: "javascript",
+      pathPrefix: "/javascript/",
+      component: path.resolve("./src/pages/javascript.js"),
     }),
     paginate({
       graphql,
       actions,
-      collection: 'tip',
-      pathPrefix: '/tips/',
-      component: path.resolve('./src/pages/tips.js'),
+      collection: "tip",
+      pathPrefix: "/tips/",
+      component: path.resolve("./src/pages/tips.js"),
     }),
     paginate({
       graphql,
       actions,
-      collection: 'post',
-      pathPrefix: '/blog/',
-      component: path.resolve('./src/pages/blog.js'),
+      collection: "post",
+      pathPrefix: "/blog/",
+      component: path.resolve("./src/pages/blog.js"),
     }),
   ]);
 };
@@ -270,15 +297,15 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
 exports.onCreatePage = async ({ page, actions, loadNodeContent, ...rest }) => {
   const { createPage } = actions;
   if (page.path.match(/merch/)) {
-    page.context.layoutClasses = 'wiiiiiiiiiide';
+    page.context.layoutClasses = "wiiiiiiiiiide";
   }
 
   if (page.path.match(/javascript/)) {
-    page.context.layoutClasses = 'ultra-wide';
+    page.context.layoutClasses = "ultra-wide";
   }
 
   if (page.path.match(/thumbnail/)) {
-    page.context.layout = 'thumbnail';
+    page.context.layout = "thumbnail";
     createPage(page);
   }
 };

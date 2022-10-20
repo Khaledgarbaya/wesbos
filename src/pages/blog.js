@@ -76,39 +76,37 @@ const Blog = function ({ data, pageContext, path }) {
 
 export default Blog;
 
-export const pageQuery = graphql`
-  query blogPosts($skip: Int! = 0) {
-    site {
-      siteMetadata {
-        title
-        description
-      }
+export const pageQuery = graphql`query blogPosts($skip: Int! = 0) {
+  site {
+    siteMetadata {
+      title
+      description
     }
-    allMdx(
-      filter: { fields: { collection: { eq: "post" } } }
-      sort: { fields: [frontmatter___date], order: DESC }
-      limit: 10
-      skip: $skip
-    ) {
-      totalCount
-      edges {
-        node {
-          id
-          excerpt
-          fields {
-            collection
-            slug
-          }
-          frontmatter {
-            title
-            date
-            category
-            image {
-              ...ImageFields
-            }
+  }
+  allMdx(
+    filter: {fields: {collection: {eq: "post"}}}
+    sort: {frontmatter: {date: DESC}}
+    limit: 10
+    skip: $skip
+  ) {
+    totalCount
+    edges {
+      node {
+        id
+        excerpt
+        fields {
+          collection
+          slug
+        }
+        frontmatter {
+          title
+          date
+          category
+          image {
+            ...ImageFields
           }
         }
       }
     }
   }
-`;
+}`;

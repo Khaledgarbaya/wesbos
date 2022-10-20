@@ -1,19 +1,17 @@
-import React from 'react';
-import { Link, graphql } from 'gatsby';
-import { MDXRenderer } from 'gatsby-plugin-mdx';
-import YouTube from 'react-youtube';
-import { Helmet } from 'react-helmet';
-import { IoLogoGithub } from 'react-icons/io';
-import Layout from '../components/Layout';
-import Img from '../components/Img';
-import H from '../components/mdxComponents/Headings';
-import ContentNav from '../components/ContentNav';
-import PostHeaderStyles from '../components/styles/PostHeaderStyles';
-import EditDialogStyles from '../components/styles/EditDialogStyles';
-import { PostMetaTags } from '../components/MetaTags';
+import React from "react";
+import { graphql } from "gatsby";
+import { MDXProvider } from "@mdx-js/react";
+import YouTube from "react-youtube";
+import { IoLogoGithub } from "react-icons/io";
+import Img from "../components/Img";
+import H from "../components/mdxComponents/Headings";
+import ContentNav from "../components/ContentNav";
+import PostHeaderStyles from "../components/styles/PostHeaderStyles";
+import EditDialogStyles from "../components/styles/EditDialogStyles";
+import { PostMetaTags } from "../components/MetaTags";
 
 export const pageQuery = graphql`
-  query($slug: String!) {
+  query ($slug: String!) {
     site {
       siteMetadata {
         title
@@ -23,7 +21,11 @@ export const pageQuery = graphql`
     mdx(fields: { slug: { eq: $slug } }) {
       id
       excerpt
-      fileAbsolutePath
+      parent {
+        ... on File {
+          absolutePath
+        }
+      }
       frontmatter {
         title
         slug
@@ -33,16 +35,15 @@ export const pageQuery = graphql`
         }
         category
       }
-      body
     }
   }
 `;
-function PostTemplate({ data: { mdx: post }, scope, pageContext }) {
+function PostTemplate({ data: { mdx: post }, pageContext, children }) {
   if (!post) {
     return <p>No Post Found? This should be a 404</p>;
   }
   const editURL = `https://github.com/wesbos/wesbos/tree/master/src/${
-    post.fileAbsolutePath.split('/src/')[1]
+    post.parent.absolutePath.split("/src/")[1]
   }`;
 
   return (
@@ -53,20 +54,19 @@ function PostTemplate({ data: { mdx: post }, scope, pageContext }) {
         <H>{post.frontmatter.title}</H>
         <div className="postMeta">
           <time dateTime={post.frontmatter.date}>{post.frontmatter.date}</time>
-          <span>{post.frontmatter.category.join(', ')}</span>
+          <span>{post.frontmatter.category.join(", ")}</span>
           <a rel="noopener noreferrer" target="_blank" href={editURL}>
             Edit Post <IoLogoGithub />
           </a>
         </div>
       </PostHeaderStyles>
-      <MDXRenderer
-        scope={{
+      <MDXProvider
+        components={{
           YouTube,
-          ...scope,
         }}
       >
-        {post.body}
-      </MDXRenderer>
+        {children}
+      </MDXProvider>
       <EditDialogStyles>
         <p>
           Find an issue with this post? Think you could clarify, update or add

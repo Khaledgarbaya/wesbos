@@ -1,18 +1,19 @@
 // const mdxFeed = require('gatsby-mdx/feed');
 
-require('dotenv').config({ path: `.env.development` });
+require("dotenv").config({ path: `.env.development` });
 
 module.exports = {
   flags: {
-    FAST_DEV: true
+    FAST_DEV: false,
   },
   siteMetadata: {
-    title: 'Wes Bos',
-    author: 'Wes Bos',
-    description: 'Fullstack Web Developer',
+    title: "Wes Bos",
+    author: "Wes Bos",
+    description: "Fullstack Web Developer",
     siteUrl: process.env.DEPLOY_PRIME_URL,
   },
   plugins: [
+    `gatsby-plugin-gatsby-cloud`,
     `gatsby-plugin-image`,
     `gatsby-plugin-styled-components`,
     `gatsby-plugin-remove-trailing-slashes`,
@@ -32,7 +33,7 @@ module.exports = {
       // these are plugin-specific options - see docs for each plugin if you want to know what the options are
       options: {
         path: `${__dirname}/src/pages`,
-        name: 'page',
+        name: "page",
       },
     },
     `gatsby-plugin-twitter`,
@@ -41,21 +42,21 @@ module.exports = {
       resolve: `gatsby-source-filesystem`,
       options: {
         path: `${__dirname}/src/posts`,
-        name: 'post',
+        name: "post",
       },
     },
     {
       resolve: `gatsby-source-filesystem`,
       options: {
         path: `${__dirname}/src/tips`,
-        name: 'tip',
+        name: "tip",
       },
     },
     {
       resolve: `gatsby-source-filesystem`,
       options: {
         path: `${__dirname}/src/javascript`,
-        name: 'javascript',
+        name: "javascript",
       },
     },
     // Images
@@ -67,18 +68,24 @@ module.exports = {
       },
     },
     {
-      resolve: 'gatsby-plugin-mdx',
+      resolve: "gatsby-plugin-mdx",
       options: {
-        root: __dirname,
-        remarkPlugins: [
-          [require('gatsby-remark-vscode').remarkPlugin, {
-              theme: `Cobalt2`,
-              extensions: [`theme-cobalt2`],
-          }]
-        ],
+        mdxOptions: {
+          remarkPlugins: [
+            [
+              require("gatsby-remark-vscode").remarkPlugin,
+              {
+                theme: `Cobalt2`,
+                extensions: [`theme-cobalt2`],
+              },
+            ],
+          ],
+        },
         gatsbyRemarkPlugins: [
           `gatsby-remark-embedder`,
           `gatsby-remark-copy-linked-files`,
+          // This is broken with Gatsby v4?
+          // See: https://github.com/andrewbranch/gatsby-remark-vscode/issues/174
           // {
           //   resolve: 'gatsby-remark-vscode',
           //   options: {
@@ -87,7 +94,7 @@ module.exports = {
           //   },
           // },
           {
-            resolve: 'gatsby-remark-images',
+            resolve: "gatsby-remark-images",
             options: {
               maxWidth: 1500,
               linkImagesToOriginal: false,
@@ -103,20 +110,6 @@ module.exports = {
               className: `hash-anchor`,
             },
           },
-        ],
-      },
-    },
-    {
-      resolve: `gatsby-transformer-remark`,
-      options: {
-        plugins: [
-          `gatsby-remark-embedder`,
-          {
-            resolve: `gatsby-remark-images`,
-            options: {
-              maxWidth: 1200,
-            },
-          },
           {
             resolve: `gatsby-remark-responsive-iframe`,
             options: {
@@ -124,7 +117,7 @@ module.exports = {
             },
           },
           // 'gatsby-remark-copy-linked-files',
-          'gatsby-remark-smartypants',
+          "gatsby-remark-smartypants",
         ],
       },
     },

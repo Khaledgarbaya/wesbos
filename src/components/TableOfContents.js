@@ -174,23 +174,21 @@ const StyledTOC = styled.aside`
   }
 `;
 
-const frontmatter = graphql`
-  query Frontmatter {
-    allMdx(
-      filter: { fields: { collection: { eq: "javascript" } } }
-      sort: { fields: frontmatter___tocTitle }
-    ) {
-      nodes {
-        frontmatter {
-          tocTitle
-          slug
-          section
-        }
-        tableOfContents
+const frontmatter = graphql`query Frontmatter {
+  allMdx(
+    filter: {fields: {collection: {eq: "javascript"}}}
+    sort: {frontmatter: {tocTitle: ASC}}
+  ) {
+    nodes {
+      frontmatter {
+        tocTitle
+        slug
+        section
       }
+      tableOfContents
     }
   }
-`;
+}`;
 
 function isActive({ isCurrent, isPartiallyCurrent, href, location }) {
   // console.log({ href, isCurrent, isPartiallyCurrent, location });

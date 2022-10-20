@@ -1,21 +1,20 @@
-import React from 'react';
-import { graphql } from 'gatsby';
-import { MDXRenderer } from 'gatsby-plugin-mdx';
-import { IoLogoGithub } from 'react-icons/io';
-import { Helmet } from 'react-helmet';
-import H from '../components/mdxComponents/Headings';
-import ContentNav from '../components/ContentNav';
-import PostHeaderStyles from '../components/styles/PostHeaderStyles';
-import EditDialogStyles from '../components/styles/EditDialogStyles';
-import JavaScriptNotesStyles from '../components/styles/JavaScriptNotesStyles';
-import { PostMetaTags } from '../components/MetaTags';
-import TableOfContents from '../components/TableOfContents';
-import { getIds } from '../utils/getIds';
-import { useActiveId } from '../hooks/useActiveId';
-import { BeginnerJavaScript } from '../components/beginnerJavaScript';
+import React from "react";
+import { graphql } from "gatsby";
+import { IoLogoGithub } from "react-icons/io";
+import { Helmet } from "react-helmet";
+import H from "../components/mdxComponents/Headings";
+import ContentNav from "../components/ContentNav";
+import PostHeaderStyles from "../components/styles/PostHeaderStyles";
+import EditDialogStyles from "../components/styles/EditDialogStyles";
+import JavaScriptNotesStyles from "../components/styles/JavaScriptNotesStyles";
+import { PostMetaTags } from "../components/MetaTags";
+import TableOfContents from "../components/TableOfContents";
+import { getIds } from "../utils/getIds";
+import { useActiveId } from "../hooks/useActiveId";
+import { BeginnerJavaScript } from "../components/beginnerJavaScript";
 
 export const pageQuery = graphql`
-  query($slug: String!) {
+  query ($slug: String!) {
     site {
       siteMetadata {
         title
@@ -24,19 +23,26 @@ export const pageQuery = graphql`
     }
     mdx(fields: { slug: { eq: $slug } }) {
       id
-      fileAbsolutePath
+      parent {
+        ... on File {
+          absolutePath
+        }
+      }
       frontmatter {
         title
         slug
         category
       }
-      body
       tableOfContents(maxDepth: 10)
     }
   }
 `;
 
-function JavaScriptNotesTemplate({ data: { mdx: post }, scope, pageContext }) {
+function JavaScriptNotesTemplate({
+  data: { mdx: post },
+  children,
+  pageContext,
+}) {
   const activeId = useActiveId(getIds(post.tableOfContents.items));
 
   if (!post) {
@@ -44,7 +50,7 @@ function JavaScriptNotesTemplate({ data: { mdx: post }, scope, pageContext }) {
   }
 
   const editURL = `https://github.com/wesbos/wesbos/tree/master/src/${
-    post.fileAbsolutePath.split('/src/')[1]
+    post.parent.absolutePath.split("/src/")[1]
   }`;
   return (
     <JavaScriptNotesStyles>
@@ -53,21 +59,15 @@ function JavaScriptNotesTemplate({ data: { mdx: post }, scope, pageContext }) {
         <PostHeaderStyles>
           <PostMetaTags post={post} />
           <H>{post.frontmatter.title}</H>
-          <BeginnerJavaScript/>
+          <BeginnerJavaScript />
           <div className="postMeta">
-            <span>{post.frontmatter.category.join(', ')}</span>
+            <span>{post.frontmatter.category.join(", ")}</span>
             <a rel="noopener noreferrer" target="_blank" href={editURL}>
               Edit Post <IoLogoGithub />
             </a>
           </div>
         </PostHeaderStyles>
-        <MDXRenderer
-          scope={{
-            ...scope,
-          }}
-        >
-          {post.body}
-        </MDXRenderer>
+        {children}
         <EditDialogStyles>
           <p>
             Find an issue with this post? Think you could clarify, update or add

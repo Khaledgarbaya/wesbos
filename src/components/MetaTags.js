@@ -1,10 +1,10 @@
-import React from 'react';
-import { Helmet } from 'react-helmet';
-import { pathJoin } from '../utils/path-join';
+import React from "react";
+import { Helmet } from "react-helmet";
+import { pathJoin } from "../utils/path-join";
 
 function getBaseURL() {
   const url = process.env.GATSBY_URL;
-  if (!url || url === 'undefined') {
+  if (!url || url === "undefined") {
     // seriously
     return `http://localhost:8888`;
   }
@@ -14,7 +14,7 @@ function getBaseURL() {
 const baseURL = getBaseURL();
 
 export function PostMetaTags({ post }) {
-  const canonical = pathJoin('https://wesbos.com', post.frontmatter.slug);
+  const canonical = pathJoin("https://wesbos.com", post.frontmatter.slug);
   const url = pathJoin(baseURL, post.frontmatter.slug);
   const thumbnailData = {
     title: post.frontmatter.title,
@@ -68,7 +68,7 @@ export function TipsMetaTags({ post }) {
     title: post.excerpt,
     url,
     thumbnail: post.frontmatter.images?.[0]?.publicURL,
-    cache: 'busta',
+    cache: "busta",
   };
   const thumbnailQuery = new URLSearchParams(
     Object.fromEntries(
@@ -101,7 +101,7 @@ export function TipsMetaTags({ post }) {
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:locale" content="en_CA" />
-      <title>{post.frontmatter.title} - Wes Bos</title>
+      <title>{post.frontmatter.title || post.frontmatter.slug} - Wes Bos</title>
     </Helmet>
   );
 }
